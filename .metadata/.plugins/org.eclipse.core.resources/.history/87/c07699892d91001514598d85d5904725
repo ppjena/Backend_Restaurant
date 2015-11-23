@@ -1,0 +1,5 @@
+package rrs.app;
+
+public class AppConfig {
+
+}
