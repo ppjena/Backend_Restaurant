@@ -34,6 +34,7 @@ public class Reservation {
 	@Produces("text/html")
 	public String create(@QueryParam("date") String date, @QueryParam("time") String time,
 			@QueryParam("partySize") String partySize, @QueryParam("contactNumber") String contactNumber) {
+		
 		return "Hello";
 	}
 
