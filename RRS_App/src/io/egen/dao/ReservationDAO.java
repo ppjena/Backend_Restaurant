@@ -14,14 +14,15 @@ import io.egen.beans.ReservationBean;
 import io.egen.beans.ReservationStatusBean;
 import io.egen.utils.DAOException;
 import io.egen.utils.DBUtils;
+import io.egen.utils.DateTImeUtil;
 
 public class ReservationDAO {
 
 	public ReservationBean create(String dateString, String timeString, String partySize, String contactNumber)
 			throws DAOException {
 		try {
-			java.sql.Date reservationDate = parseDate(dateString);
-			java.sql.Time reservationTime = parseTime(timeString);
+			java.sql.Date reservationDate = DateTImeUtil.parseDate(dateString);
+			java.sql.Time reservationTime = DateTImeUtil.parseTime(timeString);
 			return insert(reservationDate, reservationTime, Integer.parseInt(partySize), contactNumber);
 		} catch (ParseException | SQLException e) {
 			throw new DAOException(e);
@@ -31,8 +32,8 @@ public class ReservationDAO {
 	public ReservationStatusBean edit(String confirmationCode, String dateString, String timeString, int partySize)
 			throws DAOException {
 		try {
-			java.sql.Date reservationDate = parseDate(dateString);
-			java.sql.Time reservationTime = parseTime(timeString);
+			java.sql.Date reservationDate = DateTImeUtil.parseDate(dateString);
+			java.sql.Time reservationTime = DateTImeUtil.parseTime(timeString);
 			return update(confirmationCode, reservationDate, reservationTime, partySize);
 		} catch (ParseException e) {
 			throw new DAOException(e);
@@ -111,19 +112,6 @@ public class ReservationDAO {
 	private ReservationStatusBean update(String confirmationCode, Date reservationDate, Time reservationTime,
 			int partySize) {
 		return null;
-	}
-
-	private Time parseTime(String timeString) throws ParseException {
-		SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");
-		java.util.Date date = sdf.parse(timeString);
-		return new Time(date.getTime());
-	}
-
-	private java.sql.Date parseDate(String dateString) throws ParseException {
-		SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
-		System.out.println(dateString);
-		java.util.Date date = sdf.parse(dateString);
-		return new java.sql.Date(date.getTime());
 	}
 
 	private static final String insertQuery = "insert into rrs_db.reservation "
