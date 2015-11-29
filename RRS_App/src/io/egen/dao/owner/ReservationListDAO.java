@@ -35,6 +35,24 @@ public class ReservationListDAO {
 		
 	}
 	
+	public List<ReservationBean> generateReservationListforContacts(String phonenumber) throws DAOException{
+		List<ReservationBean> reservationList = new ArrayList<ReservationBean>();
+		try (Connection con = DBUtils.connect(); PreparedStatement s = con.prepareStatement(getQueryReservationList)) {
+			s.setString(1, phonenumber);
+			System.out.println(s);
+			ResultSet rs = s.executeQuery();
+		  while (rs.next()) {
+				ReservationBean reservationBean = new ReservationBean(rs.getString("date"), rs.getString("time"),
+						rs.getInt("partySize"), rs.getString("phoneNumber"), formReservationStatus(rs));
+				 reservationList.add(reservationBean);
+			}
+		  return reservationList;
+		} catch (SQLException e) {
+			throw new DAOException(e);
+		}
+		
+	}
+	
 	private java.sql.Date parseDate(String dateString) throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
 		System.out.println(dateString);
@@ -49,7 +67,8 @@ public class ReservationListDAO {
 	}
 
 	
+	
 	private static final String getQuery = "select * from rrs_db.reservation where date = ? and cancelled = 0";
 
-	
+	private static final String getQueryReservationList = "select * from rrs_db.reservation where phonenumber = ?";
 }

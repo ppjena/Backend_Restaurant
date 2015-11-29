@@ -16,9 +16,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.egen.beans.OwnerBean;
 import io.egen.beans.ProfileBean;
 import io.egen.beans.ReservationBean;
+import io.egen.beans.TableBean;
+import io.egen.dao.owner.ContactListDAO;
 import io.egen.dao.owner.LoginDAO;
 import io.egen.dao.owner.ProfileDAO;
 import io.egen.dao.owner.ReservationListDAO;
+import io.egen.dao.owner.TableListDAO;
 import io.egen.utils.DAOException;
 
 @Path("owner")
@@ -98,4 +101,43 @@ public class OwnerControl {
 		return "Error";
 	}
 
+	@Path("contactList")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public String contactList() {
+		try {
+			List<String> contactList = new ContactListDAO().getContactList();
+			return new ObjectMapper().writeValueAsString(contactList);
+		} catch (DAOException | JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		return "Error";
+	}
+
+	@Path("reservationsForContact/{phonenumber}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<ReservationBean> contactList(@PathParam("phonenumber") String phonenumber) {
+		try {
+			List<ReservationBean> reservationList = new ReservationListDAO()
+					.generateReservationListforContacts(phonenumber);
+			return reservationList;
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Path("tableList/{date}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<TableBean> tableList(@PathParam("date") String date) {
+		try {
+			List<TableBean> tableList = new TableListDAO().generateTableLists(date);
+			return tableList;
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
