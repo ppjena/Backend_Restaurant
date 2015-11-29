@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 import io.egen.beans.ReservationBean;
@@ -20,32 +19,34 @@ public class ReservationDAO {
 
 	public ReservationBean create(String dateString, String timeString, String partySize, String contactNumber)
 			throws DAOException {
-		try {
+		try (Connection con = DBUtils.connect()) {
 			java.sql.Date reservationDate = DateTImeUtil.parseDate(dateString);
 			java.sql.Time reservationTime = DateTImeUtil.parseTime(timeString);
-			return insert(reservationDate, reservationTime, Integer.parseInt(partySize), contactNumber);
+			con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+			con.setAutoCommit(false);
+			ReservationBean reservationBean = insert(reservationDate, reservationTime, Integer.parseInt(partySize),
+					contactNumber, con);
+			con.commit();
+			return reservationBean;
 		} catch (ParseException | SQLException e) {
 			throw new DAOException(e);
 		}
 	}
 
-	public ReservationStatusBean edit(String confirmationCode, String dateString, String timeString, int partySize)
-			throws DAOException {
-		try {
+	public ReservationBean edit(String confirmationCode, String dateString, String timeString, int partySize,
+			String contactNumber) throws DAOException {
+		try (Connection con = DBUtils.connect()) {
 			java.sql.Date reservationDate = DateTImeUtil.parseDate(dateString);
 			java.sql.Time reservationTime = DateTImeUtil.parseTime(timeString);
-			return update(confirmationCode, reservationDate, reservationTime, partySize);
-		} catch (ParseException e) {
+			con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+			con.setAutoCommit(false);
+			ReservationBean reservationBean = update(confirmationCode, reservationDate, reservationTime, partySize,
+					contactNumber, con);
+			con.commit();
+			return reservationBean;
+		} catch (ParseException | SQLException e) {
 			throw new DAOException(e);
 		}
-	}
-
-	public ReservationBean get(int confirmationCode) {
-		return null;
-	}
-
-	public ReservationBean cancel(int confirmationCode) {
-		return null;
 	}
 
 	private int getNumberOfReservations(Date reservationDate, Time reservationTime, Connection con)
@@ -62,12 +63,10 @@ public class ReservationDAO {
 
 	}
 
-	private ReservationBean insert(Date reservationDate, Time reservationTime, int partySize, String contactNumber)
-			throws SQLException {
-		try (Connection con = DBUtils.connect(); PreparedStatement s = con.prepareStatement(insertQuery)) {
+	private ReservationBean insert(Date reservationDate, Time reservationTime, int partySize, String contactNumber,
+			Connection con) throws SQLException {
+		try (PreparedStatement s = con.prepareStatement(insertQuery)) {
 			ReservationBean returnStatus = null;
-			con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-			con.setAutoCommit(false);
 			int numberOfReservations = getNumberOfReservations(reservationDate, reservationTime, con);
 			if (numberOfReservations == 4) {
 				return new ReservationBean(reservationDate.toString(), reservationTime.toString(), partySize,
@@ -77,13 +76,12 @@ public class ReservationDAO {
 					numberOfReservations);
 			System.out.println(s);
 			s.execute();
-			con.commit();
 			return returnStatus;
 		}
 	}
 
-	private ReservationBean setValuesOnPreparedStatement(Date reservationDate, Time reservationTime,
-			int partySize, String contactNumber, PreparedStatement s, int numberOfReservations) throws SQLException {
+	private ReservationBean setValuesOnPreparedStatement(Date reservationDate, Time reservationTime, int partySize,
+			String contactNumber, PreparedStatement s, int numberOfReservations) throws SQLException {
 		ReservationBean returnStatus;
 		s.setDate(1, reservationDate);
 		s.setTime(2, reservationTime);
@@ -96,9 +94,8 @@ public class ReservationDAO {
 			s.setString(6, ReservationStatusBean.Status.WAITING.toString());
 			s.setInt(7, numberOfReservations);
 			returnStatus = new ReservationBean(reservationDate.toString(), reservationTime.toString(), partySize,
-					contactNumber,
-					new ReservationStatusBean(ReservationStatusBean.Status.WAITING, confirmationCode,
-					numberOfReservations));
+					contactNumber, new ReservationStatusBean(ReservationStatusBean.Status.WAITING, confirmationCode,
+							numberOfReservations));
 		} else {
 			s.setString(6, ReservationStatusBean.Status.CONFIRMED.toString());
 			s.setInt(7, 0);
@@ -109,9 +106,14 @@ public class ReservationDAO {
 		return returnStatus;
 	}
 
-	private ReservationStatusBean update(String confirmationCode, Date reservationDate, Time reservationTime,
-			int partySize) {
-		return null;
+	private ReservationBean update(String confirmationCode, Date reservationDate, Time reservationTime, int partySize,
+			String contactNumber, Connection con) throws DAOException {
+		try (PreparedStatement s = con.prepareStatement(insertQuery)) {
+			new ReservationCancellationDAO().cancel(confirmationCode);
+			return insert(reservationDate, reservationTime, partySize, contactNumber, con);
+		} catch (SQLException e) {
+			throw new DAOException(e);
+		}
 	}
 
 	private static final String insertQuery = "insert into rrs_db.reservation "

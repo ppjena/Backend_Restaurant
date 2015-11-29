@@ -1,7 +1,5 @@
 package io.egen.rrs;
 
-import java.util.Date;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -14,7 +12,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.egen.beans.ReservationBean;
-import io.egen.beans.ReservationStatusBean;
 import io.egen.dao.ReservationCancellationDAO;
 import io.egen.dao.ReservationDAO;
 import io.egen.dao.ReservationGetterDAO;
@@ -56,6 +53,39 @@ public class ReservationControl {
 			e.printStackTrace();
 		}
 		return "Error";
+	}
+
+	/**
+	 * Test method. We can delete after we test.
+	 * 
+	 * @return
+	 */
+	@Path("editGet/{confirmationcode}/{date}/{time}/{partySize}/{contactNumber}")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public ReservationBean editGet(@PathParam("confirmationcode") String confirmationcode, @PathParam("date") String date,
+			@PathParam("time") String time, @PathParam("partySize") String partySize,
+			@PathParam("contactNumber") String contactNumber) {
+		return edit(confirmationcode, date, time, partySize, contactNumber);
+	}
+
+	/**
+	 * Actual method that creates a reservation
+	 * 
+	 * @return
+	 */
+	@Path("edit")
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	public ReservationBean edit(@QueryParam("confirmationcode") String confirmationCode,
+			@QueryParam("date") String date, @QueryParam("time") String time, @QueryParam("partySize") String partySize,
+			@QueryParam("contactNumber") String contactNumber) {
+		try {
+			return new ReservationDAO().edit(confirmationCode, date, time, Integer.parseInt(partySize),contactNumber);
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/**
