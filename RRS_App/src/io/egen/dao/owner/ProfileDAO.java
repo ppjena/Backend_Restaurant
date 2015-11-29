@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.text.ParseException;
 
 import io.egen.beans.ProfileBean;
-import io.egen.beans.ReservationBean;
 import io.egen.utils.DAOException;
 import io.egen.utils.DBUtils;
 import io.egen.utils.DateTImeUtil;
@@ -15,13 +14,21 @@ import io.egen.utils.DateTImeUtil;
 public class ProfileDAO {
 
 	public ProfileBean getProfileDetails() throws DAOException {
-		try (Connection con = DBUtils.connect(); PreparedStatement s = con.prepareStatement(getQuery)) {
+		try (Connection con = DBUtils.connect()) {
+			return getProfileDetails(con);
+		} catch (SQLException e) {
+			throw new DAOException(e);
+		}
+	}
+
+	public ProfileBean getProfileDetails(Connection con) throws DAOException {
+		try (PreparedStatement s = con.prepareStatement(getQuery)) {
 			System.out.println(s);
 			ResultSet rs = s.executeQuery();
 			if (rs.next()) {
 				ProfileBean profileBean = new ProfileBean(rs.getString("name"), rs.getString("contact"),
 						rs.getString("email"), rs.getString("address"), rs.getInt("autoAssignTable"),
-						rs.getString("opening"), rs.getString("closing"),rs.getString("openDays"));
+						rs.getString("opening"), rs.getString("closing"), rs.getString("openDays"));
 				return profileBean;
 			}
 		} catch (SQLException e) {
@@ -46,14 +53,8 @@ public class ProfileDAO {
 			throw new DAOException(e);
 		}
 	}
-	
+
 	private static final String getQuery = "select * from rrs_db.profile";
-	private static final String updateQuery = "update rrs_db.profile set name = ?,"
-			+ "contact = ?,"
-			+ "email = ?,"
-			+ "address = ?,"
-			+ "autoAssigntable = ?,"
-			+ "opening = ?,"
-			+ "closing = ?,"
-			+ "openDays = ?";
+	private static final String updateQuery = "update rrs_db.profile set name = ?," + "contact = ?," + "email = ?,"
+			+ "address = ?," + "autoAssigntable = ?," + "opening = ?," + "closing = ?," + "openDays = ?";
 }

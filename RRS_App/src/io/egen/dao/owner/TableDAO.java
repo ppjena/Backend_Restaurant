@@ -13,7 +13,7 @@ import io.egen.utils.DAOException;
 import io.egen.utils.DBUtils;
 import io.egen.utils.DateTImeUtil;
 
-public class TableListDAO {
+public class TableDAO {
 	
 	public List<TableBean> generateTableLists(String date) throws DAOException{
 		List<TableBean> tableList = new ArrayList<TableBean>();

@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -21,7 +22,8 @@ import io.egen.dao.owner.ContactListDAO;
 import io.egen.dao.owner.LoginDAO;
 import io.egen.dao.owner.ProfileDAO;
 import io.egen.dao.owner.ReservationListDAO;
-import io.egen.dao.owner.TableListDAO;
+import io.egen.dao.owner.SeatingDAO;
+import io.egen.dao.owner.TableDAO;
 import io.egen.utils.DAOException;
 
 @Path("owner")
@@ -133,11 +135,25 @@ public class OwnerControl {
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<TableBean> tableList(@PathParam("date") String date) {
 		try {
-			List<TableBean> tableList = new TableListDAO().generateTableLists(date);
+			List<TableBean> tableList = new TableDAO().generateTableLists(date);
 			return tableList;
 		} catch (DAOException e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Path("assignTable/{confirmationCode}/{tableName}")
+	@PUT
+	@Produces(MediaType.APPLICATION_JSON)
+	public String assignTable(@PathParam("confirmationCode") String confirmationCode,
+			@PathParam("tableName") String tableName) {
+		try {
+			new SeatingDAO().updateTable(confirmationCode, tableName);
+			return "SUCCESS";
+		} catch (DAOException e) {
+			e.printStackTrace();
+		}
+		return "FAILURE";
 	}
 }
