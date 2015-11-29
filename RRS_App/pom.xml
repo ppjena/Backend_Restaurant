@@ -69,12 +69,6 @@
 	<artifactId>mysql-connector-java</artifactId>
 	<version>5.1.37</version>
 </dependency>
-<!-- swagger -->
-<dependency>
-  <groupId>io.swagger</groupId>
-  <artifactId>swagger-jersey2-jaxrs</artifactId>
-  <version>1.5.4</version>
-</dependency>
 
   </dependencies>
 </project>
