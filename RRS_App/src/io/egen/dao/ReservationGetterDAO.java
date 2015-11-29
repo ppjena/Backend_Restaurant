@@ -19,7 +19,7 @@ public class ReservationGetterDAO {
 			ResultSet rs = s.executeQuery();
 			if (rs.next()) {
 				ReservationBean reservationBean = new ReservationBean(rs.getString("date"), rs.getString("time"),
-						rs.getInt("partySize"), rs.getString("phoneNumber"), formReservationStatus(rs));
+						rs.getInt("partySize"), rs.getString("phoneNumber"), formReservationStatus(rs),rs.getString("tableName"));
 				return reservationBean;
 			}
 		} catch (SQLException e) {

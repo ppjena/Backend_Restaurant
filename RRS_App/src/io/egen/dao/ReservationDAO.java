@@ -70,7 +70,7 @@ public class ReservationDAO {
 			int numberOfReservations = getNumberOfReservations(reservationDate, reservationTime, con);
 			if (numberOfReservations == 4) {
 				return new ReservationBean(reservationDate.toString(), reservationTime.toString(), partySize,
-						contactNumber, new ReservationStatusBean(ReservationStatusBean.Status.WAITLIST_FULL, "", 0));
+						contactNumber, new ReservationStatusBean(ReservationStatusBean.Status.WAITLIST_FULL, "", 0),"");
 			}
 			returnStatus = setValuesOnPreparedStatement(reservationDate, reservationTime, partySize, contactNumber, s,
 					numberOfReservations);
@@ -95,13 +95,13 @@ public class ReservationDAO {
 			s.setInt(7, numberOfReservations);
 			returnStatus = new ReservationBean(reservationDate.toString(), reservationTime.toString(), partySize,
 					contactNumber, new ReservationStatusBean(ReservationStatusBean.Status.WAITING, confirmationCode,
-							numberOfReservations));
+							numberOfReservations),"");
 		} else {
 			s.setString(6, ReservationStatusBean.Status.CONFIRMED.toString());
 			s.setInt(7, 0);
 			returnStatus = new ReservationBean(reservationDate.toString(), reservationTime.toString(), partySize,
 					contactNumber,
-					new ReservationStatusBean(ReservationStatusBean.Status.CONFIRMED, confirmationCode, 0));
+					new ReservationStatusBean(ReservationStatusBean.Status.CONFIRMED, confirmationCode, 0),"");
 		}
 		return returnStatus;
 	}
