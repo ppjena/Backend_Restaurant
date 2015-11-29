@@ -1,11 +1,11 @@
 package io.egen.beans;
 
-public class ReservationStatus {
+public class ReservationStatusBean {
 	
-	public ReservationStatus() {
+	public ReservationStatusBean() {
 	}
 	
-	public ReservationStatus(Status reStatus,String confirmationCode,int waitingNumber) {
+	public ReservationStatusBean(Status reStatus,String confirmationCode,int waitingNumber) {
 		this.reservationStatus = reStatus;
 		this.confirmationCode = confirmationCode;
 		this.waitingNumber = waitingNumber;
