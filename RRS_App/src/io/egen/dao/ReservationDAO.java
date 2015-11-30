@@ -53,17 +53,19 @@ public class ReservationDAO {
 		}
 	}
 
-	private List<String> getEmptyTables(Date reservationDate, Time reservationTime, Connection con)
+	private List<String> getOccupiedTables(Date reservationDate, Time reservationTime, Connection con)
 			throws SQLException {
-		List<String> emptyTables = new ArrayList<String>();
-		try (PreparedStatement s = con.prepareStatement(getEmptyTables)) {
+		List<String> occupiedTables = new ArrayList<String>();
+		try (PreparedStatement s = con.prepareStatement(getPotentiallyOccupiedTables)) {
 			s.setDate(1, reservationDate);
 			s.setTime(2, reservationTime);
+			s.setTime(3, reservationTime);
+			System.out.println(s);
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
-				emptyTables.add(rs.getString(1));
+				occupiedTables.add(rs.getString(1));
 			}
-			return emptyTables;
+			return occupiedTables;
 		}
 	}
 
@@ -72,6 +74,7 @@ public class ReservationDAO {
 		try (PreparedStatement s = con.prepareStatement(getReservationsQuery)) {
 			s.setDate(1, reservationDate);
 			s.setTime(2, reservationTime);
+			System.out.println(s);
 			ResultSet rs = s.executeQuery();
 			if (rs.next()) {
 				return rs.getInt(1);
@@ -85,16 +88,18 @@ public class ReservationDAO {
 			Connection con) throws SQLException, DAOException {
 		try (PreparedStatement s = con.prepareStatement(insertQuery)) {
 			ReservationBean returnStatus = null;
-			List<String> emptyTables = getEmptyTables(reservationDate, reservationTime, con);
+			List<String> occupiedTables = getOccupiedTables(reservationDate, reservationTime, con);
+			List<String> tableNames = new SeatingDAO().getTableNames(con);
 			/*
 			 * If there are free tables, confirm reservations. If not, give up
 			 * to 3 wait lists
 			 */
-			if (!emptyTables.isEmpty()) {
+			if (occupiedTables.size() < tableNames.size()) {
 				returnStatus = setValuesOnPreparedStatement(reservationDate, reservationTime, partySize, contactNumber,
 						s, 0);
 			} else {
-				int numberOfReservations = getNumberOfReservations(reservationDate, reservationTime, con);
+				int numberOfReservations = getNumberOfReservations(reservationDate, reservationTime, con)
+						- tableNames.size() + 1;
 				if (numberOfReservations == 4) {
 					return new ReservationBean(reservationDate.toString(), reservationTime.toString(), partySize,
 							contactNumber, new ReservationStatusBean(ReservationStatusBean.Status.WAITLIST_FULL, "", 0),
@@ -110,8 +115,9 @@ public class ReservationDAO {
 			 * reservation with the first empty table.
 			 */
 			if (new ProfileDAO().getProfileDetails().getAutoAssign() == 1) {
+				tableNames.removeAll(occupiedTables);
 				new SeatingDAO().updateTable(returnStatus.getReservationStatus().getConfirmationCode(),
-						emptyTables.get(0), con);
+						tableNames.get(0), con);
 			}
 
 			return returnStatus;
@@ -155,15 +161,13 @@ public class ReservationDAO {
 		}
 	}
 
-	public static final int DEFAULT_RESERVATION_DURATION = 2;
-
 	private static final String insertQuery = "insert into rrs_db.reservation "
 			+ "(DATE,TIME,PARTYSIZE,PHONENUMBER,CONFIRMATIONCODE,STATUS,QUEUENUMBER) values" + "(?,?,?,?,?,?,?)";
 
-	private static final String getReservationsQuery = "select count(*) from rrs_db.reservation where DATE = ? AND TIME = ? AND CANCELLED = 0";
+	private static final String getReservationsQuery = "select count(*) from rrs_db.reservation where DATE = ? "
+			+ "AND TIME = ? AND CANCELLED = 0";
 
-	private static final String getEmptyTables = "select t.tablename from rrs_db.table t " + "left outer join "
-			+ "(select distinct tablename from rrs_db.reservation where date = ? AND cancelled =0 AND"
-			+ " DATE_ADD(time, INTERVAL 2 HOUR) < ?) res on t.tablename = res.tablename";
+	private static final String getPotentiallyOccupiedTables = "select tablename from rrs_db.reservation r where date = ? "
+			+ "AND cancelled =0 AND (time + INTERVAL 2 HOUR) >= ? " + "AND (time - INTERVAL 2 HOUR) <= ?";
 
 }

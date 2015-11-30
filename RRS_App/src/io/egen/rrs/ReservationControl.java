@@ -21,31 +21,19 @@ import io.swagger.annotations.ApiResponses;
 @Path("reservation")
 @Api(tags = { "reservation" })
 public class ReservationControl {
-	/**
-	 * Test method to create a reservation through get
-	 * 
-	 * @return
-	 */
-	@Path("createGet/{date}/{time}/{partySize}/{contactNumber}")
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public String createGet(@PathParam("date") String date, @PathParam("time") String time,
-			@PathParam("partySize") String partySize, @PathParam("contactNumber") String contactNumber) {
-		System.out.println(date);
-		return create(date, time, partySize, contactNumber);
-	}
+
 	/**
 	 * Create a reservation
 	 */
-	@Path("create/{date}/{time}/{partySize}/{contactNumber}")
+	@Path("create")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Create Reservation", notes = " Create Reservation for a customer/Owner")
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 400, message = "Bad Request"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String create(@PathParam("date") String date, @PathParam("time") String time,
-			@PathParam("partySize") String partySize, @PathParam("contactNumber") String contactNumber) {
+	public String create(@QueryParam("date") String date, @QueryParam("time") String time,
+			@QueryParam("partySize") String partySize, @QueryParam("contactNumber") String contactNumber) {
 		try {
 			ReservationBean reservationStatus = new ReservationDAO().create(date, time, partySize, contactNumber);
 			return new ObjectMapper().writeValueAsString(reservationStatus);
@@ -54,17 +42,7 @@ public class ReservationControl {
 		}
 		return "Error";
 	}
-	/**
-	 * edit a reservation through Get
-	 */
-	@Path("editGet/{confirmationcode}/{date}/{time}/{partySize}/{contactNumber}")
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public ReservationBean editGet(@PathParam("confirmationcode") String confirmationcode,
-			@PathParam("date") String date, @PathParam("time") String time, @PathParam("partySize") String partySize,
-			@PathParam("contactNumber") String contactNumber) {
-		return edit(confirmationcode, date, time, partySize, contactNumber);
-	}
+
 	/**
 	 * edit a reservation
 	 */
@@ -89,7 +67,7 @@ public class ReservationControl {
 	/**
 	 * Cancel a reservation
 	 */
-	@Path("cancel/{confirmationcode}")
+	@Path("cancel")
 	@PUT
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Cancel Reservation", notes = " Update/Cancel a Reservation Detail")
@@ -97,7 +75,7 @@ public class ReservationControl {
 			@ApiResponse(code = 400, message = "Bad Request"),
 			@ApiResponse(code = 404, message = "Not Found"),
 			@ApiResponse(code = 500, message = "Internal Service Error") })
-	public String cancel(@PathParam("confirmationcode") String confirmationCode) {
+	public String cancel(@QueryParam("confirmationcode") String confirmationCode) {
 		try {
 			new ReservationCancellationDAO().cancel(confirmationCode);
 			return "Success";
@@ -106,21 +84,7 @@ public class ReservationControl {
 		}
 		return "Error";
 	}
-	/**
-	 * Cancel a reservation with Get
-	 */
-	@Path("cancelGet/{confirmationcode}")
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public String cancelGet(@PathParam("confirmationcode") String confirmationCode) {
-		return cancel(confirmationCode);
-	}
-	/**
-	 * Get reservation details for the confirmationcode
-	 * 
-	 * @param confirmationCode
-	 * @return
-	 */
+
 	@Path("reservation/{confirmationcode}")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

@@ -11,9 +11,6 @@ import javax.ws.rs.ext.Provider;
 
 @Provider
 public class AccessControlResponseFilter implements ContainerResponseFilter {
-	public AccessControlResponseFilter() {
-		System.out.println("filter created");
-	}
 
 	@Override
 	public void filter(ContainerRequestContext reqContext, ContainerResponseContext respContext) throws IOException {
@@ -22,7 +19,6 @@ public class AccessControlResponseFilter implements ContainerResponseFilter {
 		String[] originsAllowed = { "http://localhost:63342", "http://petstore.swagger.io" };
 
 		String origin = reqContext.getHeaders().getFirst("Origin");
-		System.out.println(origin);
 		if (Arrays.asList(originsAllowed).contains(origin)) {
 			headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,HEAD,OPTIONS");
 			headers.add("Access-Control-Allow-Origin", origin);

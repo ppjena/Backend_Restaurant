@@ -19,7 +19,6 @@ public class DateTImeUtil {
 
 	public static java.sql.Date parseDate(String dateString) throws ParseException {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
-		System.out.println(dateString);
 		java.util.Date date = sdf.parse(dateString);
 		return new java.sql.Date(date.getTime());
 	}
